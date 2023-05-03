@@ -1,24 +1,18 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Security;
 using System.Windows.Forms;
+using WindowsFormsApp1;
 
 namespace WinFormsLibrary1 {
-
-    public enum Masks {
-        FONE,
-        CEP,
-        RG,
-        CPF,
-        PIS,
-        EMAIL,
-        MONETARY,
-        NONE
-    }
 
     public class LabelTextBox : Panel {
 
         private Label label;
         private MaskedTextBox textBox;
+        //private Masks maskSelected = Masks.NONE;
 
         #region :: CONSTRUCTORS ::
         public LabelTextBox() {
@@ -41,29 +35,24 @@ namespace WinFormsLibrary1 {
             label.Text = labelValue;
             textBox.Text = textBoxValue;
 
-            this.SuspendLayout();
+            this.label.Margin = new Padding(0);
+            this.label.Location = new Point(0, ((20/2)-(13/2)));
+            this.label.Size = new Size(40, 13);
 
-            this.label.AutoSize = true;
-            this.label.Location = new Point(1, 1);
-            this.label.Name = "label1";
-            this.label.Size = new Size(35, 13);
-            this.label.TabIndex = 0;
-            this.label.Text = "label1";
-            
+            this.textBox.Margin = new Padding(0);
             this.textBox.Location = new Point(40, 1);
-            this.textBox.Name = "textBox1";
-            this.textBox.Size = new Size(100, 20);
-            this.textBox.TabIndex = 1;
+            this.textBox.Size = new Size(110, 20);
+
+            this.Size = new Size(150, 22);
 
             this.Controls.Add(label);
             this.Controls.Add(textBox);
 
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            this.SizeChanged += new System.EventHandler(this.panel_SizeChanged);
         }
 
-        [DefaultValue("Label1")]
-        [Category("Appearance")]
+        [DefaultValue("")]
+        [Category("WSCustom")]
         [Browsable(true)]
         [Description("Define o texto associado ao rótulo")]
         public string SetLabelValue {
@@ -72,11 +61,12 @@ namespace WinFormsLibrary1 {
             }
             set {
                 label.Text = value;
+                AjustarComponentesFilhos();
             }
         }
 
         [DefaultValue("")]
-        [Category("Appearance")]
+        [Category("WSCustom")]
         [Browsable(true)]
         [Description("Define o valor associado ao textBox")]
         public string SetTextBoxValue {
@@ -88,12 +78,86 @@ namespace WinFormsLibrary1 {
             }
         }
 
-        [DefaultValue(Masks.NONE)]
+        [Category("WSCustom")]
+        [Browsable(true)]
+        [Description("Define a dimensão do rótulo")]
+        public Size SetLabelSize {
+            get { return label.Size; }
+            set { label.Size = value; }
+        }
+
+        [Category("WSCustom")]
+        [Browsable(true)]
+        [Description("Define a dimensão da caixa de texto")]
+        public Size SetTextBoxSize {
+            get { return textBox.Size; }
+            set { textBox.Size = value; }
+        }
+
+        [Category("WSCustom")]
+        [Browsable(true)]
+        [Description("Define a localização do rótulo")]
+        public Point SetLabelLocation {
+            get { return label.Location; }
+            set { label.Location = value; }
+        }
+
+        [Category("WSCustom")]
+        [Browsable(true)]
+        [Description("Define a localização da caixa de texto")]
+        public Point SetTextBoxLocation {
+            get { return textBox.Location; }
+            set { textBox.Location = value; }
+        }
+
+        [Category("WSCustom")]
+        [Browsable(true)]
+        [Description("Define a margem do rótulo")]
+        public Padding SetLabelMargin {
+            get { return label.Margin; }
+            set { label.Margin = value; }
+        }
+
+        [Category("WSCustom")]
+        [Browsable(true)]
+        [Description("Define a margem da caixa de texto")]
+        public Padding SetTextBoxMargin {
+            get { return textBox.Margin; }
+            set { textBox.Margin = value; }
+        }
+
+        /*
+        [DefaultValue(maskSelected)]
         [Category("Appearance")]
         [Browsable(true)]
         [Description("Define uma máscara associado ao textBox")]
-        public int SetMask(Masks mask) {
-            textBox.Mask = mask;
-        } 
+        public Masks SetMask {
+            get {
+                return maskSelected;
+            }
+            set {
+                maskSelected = value;
+            }
+        }
+        */
+
+        private void panel_SizeChanged(object sender, EventArgs e) {
+            int width = this.Size.Width - label.Size.Width;
+            textBox.Size = new Size(width, textBox.Size.Height);
+        }
+
+        private void AjustarComponentesFilhos() {
+            int width = CalcularComprimentoString(label.Text);
+            label.Size = new Size(width, label.Size.Height);
+
+            textBox.Location = new Point(width, textBox.Location.Y);
+
+            int widthTextBox = this.Size.Width - textBox.Location.X;
+            textBox.Size = new Size(widthTextBox, textBox.Size.Height);
+        }
+
+        private int CalcularComprimentoString(string text) {
+            return TextRenderer.MeasureText(text, label.Font).Width;
+        }
     }
 }
